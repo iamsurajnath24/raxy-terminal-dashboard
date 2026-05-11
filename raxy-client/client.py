@@ -10,8 +10,14 @@ async def connect_to_server():
 
         await websocket.send("ROLE:RAXY")
 
+        loop = asyncio.get_event_loop()
+
         while True:
-            command = input("CMD> ")
+            command = await loop.run_in_executor(
+                None,
+                input,
+                "CMD> "
+            )
 
             if command.lower() == "exit":
                 break
@@ -24,9 +30,18 @@ async def connect_to_server():
                     text=True
                 )
 
-                await websocket.send(f"$ {command}\n\n{result}")
+                print("SENDING OUTPUT TO SERVER")
+
+                await websocket.send(
+                    f"$ {command}\n\n{result}"
+                )
 
             except subprocess.CalledProcessError as e:
-                await websocket.send(f"$ {command}\n\n{e.output}")
+
+                print("SENDING ERROR OUTPUT")
+
+                await websocket.send(
+                    f"$ {command}\n\n{e.output}"
+                )
 
 asyncio.run(connect_to_server())

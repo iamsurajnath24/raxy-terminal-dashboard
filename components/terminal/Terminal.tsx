@@ -1,58 +1,73 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+
 import { Terminal as XTerm } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
+
 import "@xterm/xterm/css/xterm.css";
 
 export default function Terminal() {
   const terminalRef = useRef<HTMLDivElement | null>(null);
-  const xtermRef = useRef<XTerm | null>(null);
 
-useEffect(() => {
-  console.log("TERMINAL COMPONENT MOUNTED");
+  useEffect(() => {
+    console.log("TERMINAL COMPONENT MOUNTED");
 
-  const term = new XTerm();
+    const term = new XTerm({
+      cursorBlink: true,
+      convertEol: true,
+    });
 
-  if (terminalRef.current) {
-    term.open(terminalRef.current);
-  }
+    const fitAddon = new FitAddon();
 
-  const socket = new WebSocket(
-    "wss://raxy-terminal-dashboard.onrender.com"
-  );
+    term.loadAddon(fitAddon);
 
-  socket.onopen = () => {
-  console.log("SOCKET OPENED");
+    if (terminalRef.current) {
+      term.open(terminalRef.current);
 
-  term.writeln("Connected to WebSocket Server");
+      fitAddon.fit();
+    }
 
-  socket.send("ROLE:DASHBOARD");
+    window.addEventListener("resize", () => {
+      fitAddon.fit();
+    });
 
-  socket.send("TEST_MESSAGE_FROM_DASHBOARD");
-};  
+    const socket = new WebSocket(
+      "wss://raxy-terminal-dashboard.onrender.com"
+    );
 
-  socket.onmessage = (event) => {
-    console.log("MESSAGE RECEIVED:", event.data);
+    socket.onopen = () => {
+      console.log("SOCKET OPENED");
 
-    term.write("\r\n");
-    term.write(String(event.data));
-    term.write("\r\n$ ");
-  };
+      term.writeln("Connected to WebSocket Server");
 
-  socket.onclose = () => {
-    console.log("SOCKET CLOSED");
-  };
+      socket.send("ROLE:DASHBOARD");
+    };
 
-  socket.onerror = (err) => {
-    console.log("SOCKET ERROR:", err);
-  };
+    socket.onmessage = (event) => {
+      console.log("MESSAGE RECEIVED:", event.data);
 
-  return () => {
-    console.log("USEEFFECT CLEANUP RUNNING");
+      term.write("\r\n");
 
-    socket.close();
-  };
-}, []);
+      term.write(String(event.data));
+
+      term.write("\r\n$ ");
+    };
+
+    socket.onclose = () => {
+      console.log("SOCKET CLOSED");
+    };
+
+    socket.onerror = (err) => {
+      console.log("SOCKET ERROR:", err);
+    };
+
+    return () => {
+      socket.close();
+
+      term.dispose();
+    };
+  }, []);
 
   return (
     <div
