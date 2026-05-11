@@ -19,28 +19,27 @@ wss.on("connection", (ws) => {
   console.log("New Client Connected");
 
   ws.on("message", (message) => {
-    const msg = message.toString();
+  const msg = message.toString();
 
-    console.log("Received:", msg);
+  console.log("Received:", msg);
 
-    if (msg === "ROLE:DASHBOARD") {
-      dashboardClient = ws;
-      console.log("Dashboard Connected");
-      return;
-    }
+  if (msg === "ROLE:DASHBOARD") {
+    dashboardClient = ws;
+    console.log("Dashboard Connected");
+    return;
+  }
 
-    if (msg === "ROLE:RAXY") {
-      raxyClient = ws;
-      console.log("Raxy Connected");
-      return;
-    }
+  if (msg === "ROLE:RAXY") {
+    raxyClient = ws;
+    console.log("Raxy Connected");
+    return;
+  }
 
-    if (dashboardClient) {
-  console.log("Sending message to dashboard");
-
-  dashboardClient.send(msg);
-}
-  });
+  if (dashboardClient) {
+    console.log("Sending message to dashboard");
+    dashboardClient.send(msg);
+  }
+});
 
   ws.on("close", () => {
     console.log("Client Disconnected");

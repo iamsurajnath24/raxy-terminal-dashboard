@@ -39,9 +39,12 @@ export default function Terminal() {
     };
 
     socket.onmessage = (event) => {
-      term.writeln("\r\n" + event.data);
-      term.write("\r\n$ ");
-    };
+  console.log("FROM SERVER:", event.data);
+
+  term.write("\r\n");
+  term.write(event.data);
+  term.write("\r\n$ ");
+};
     let currentCommand = "";
 
 term.onData((data) => {
