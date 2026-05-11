@@ -35,10 +35,17 @@ wss.on("connection", (ws) => {
     return;
   }
 
-  if (dashboardClient) {
-    console.log("Sending message to dashboard");
-    dashboardClient.send(msg);
-  }
+  if (ws === raxyClient && dashboardClient) {
+  console.log("Forwarding RAXY output to dashboard");
+
+  dashboardClient.send(msg);
+}
+
+if (ws === dashboardClient && raxyClient) {
+  console.log("Forwarding dashboard command to RAXY");
+
+  raxyClient.send(msg);
+}
 });
 
   ws.on("close", () => {
