@@ -34,6 +34,9 @@ wss.on("connection", (ws) => {
     console.log("Raxy Connected");
     return;
   }
+  console.log("dashboardClient exists:", !!dashboardClient);
+console.log("raxyClient exists:", !!raxyClient);
+console.log("sender is raxy:", ws === raxyClient);
 
   if (ws === raxyClient && dashboardClient) {
   console.log("Forwarding RAXY output to dashboard");
