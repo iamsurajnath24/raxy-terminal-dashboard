@@ -30,7 +30,7 @@ export default function Terminal() {
     term.writeln("Connecting to WebSocket Server...");
     term.write("\r\n$ ");
 
-    const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket("wss://raxy-terminal-dashboard.onrender.com");
 
     socket.onopen = () => {
       term.writeln("\r\nConnected to WebSocket Server");
