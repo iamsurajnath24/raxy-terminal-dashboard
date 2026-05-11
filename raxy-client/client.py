@@ -8,28 +8,25 @@ async def connect_to_server():
     async with websockets.connect(uri) as websocket:
         print("Connected to WebSocket Server")
 
-        # Identify client
         await websocket.send("ROLE:RAXY")
 
         while True:
-            # Wait for command from dashboard
-            command = await websocket.recv()
+            command = input("CMD> ")
 
-            print("Command Received:", command)
+            if command.lower() == "exit":
+                break
 
             try:
                 result = subprocess.check_output(
                     command,
                     shell=True,
-                    stderr=subprocess.STDOUT
+                    stderr=subprocess.STDOUT,
+                    text=True
                 )
 
-                output = result.decode()
+                await websocket.send(f"$ {command}\n\n{result}")
 
             except subprocess.CalledProcessError as e:
-                output = e.output.decode()
-
-            # Send result back
-            await websocket.send(output)
+                await websocket.send(f"$ {command}\n\n{e.output}")
 
 asyncio.run(connect_to_server())
