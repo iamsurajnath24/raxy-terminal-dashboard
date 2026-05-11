@@ -22,12 +22,14 @@ useEffect(() => {
   );
 
   socket.onopen = () => {
-    console.log("SOCKET OPENED");
+  console.log("SOCKET OPENED");
 
-    term.writeln("Connected to WebSocket Server");
+  term.writeln("Connected to WebSocket Server");
 
-    socket.send("ROLE:DASHBOARD");
-  };
+  socket.send("ROLE:DASHBOARD");
+
+  socket.send("TEST_MESSAGE_FROM_DASHBOARD");
+};  
 
   socket.onmessage = (event) => {
     console.log("MESSAGE RECEIVED:", event.data);
