@@ -8,84 +8,29 @@ export default function Terminal() {
   const terminalRef = useRef<HTMLDivElement | null>(null);
   const xtermRef = useRef<XTerm | null>(null);
 
-  useEffect(() => {
-    if (!terminalRef.current) return;
+useEffect(() => {
+  const term = new XTerm();
+  if (terminalRef.current) {
+  term.open(terminalRef.current);
+}
 
-    // Prevent duplicate terminal creation
-    if (xtermRef.current) return;
+  const socket = new WebSocket("wss://raxy-terminal-dashboard.onrender.com");
 
-    const term = new XTerm({
-      cursorBlink: true,
-      rows: 30,
-      cols: 120,
-      theme: {
-        background: "#000000",
-      },
-    });
+  socket.onopen = () => {
+    term.writeln("Connected to WebSocket Server");
+    socket.send("ROLE:DASHBOARD");
+  };
 
-    xtermRef.current = term;
-
-    term.open(terminalRef.current);
-
-    term.writeln("Connecting to WebSocket Server...");
-    term.write("\r\n$ ");
-
-    const socket = new WebSocket("wss://raxy-terminal-dashboard.onrender.com");
-
-    socket.onopen = () => {
-      term.writeln("\r\nConnected to WebSocket Server");
-      socket.send("ROLE:DASHBOARD");
-      term.write("\r\n$ ");
-    };
-
-    socket.onmessage = (event) => {
-  console.log("FROM SERVER:", event.data);
-
-  term.write("\r\n");
-  term.write(event.data);
-  term.write("\r\n$ ");
-};
-    let currentCommand = "";
-
-term.onData((data) => {
-  const charCode = data.charCodeAt(0);
-
-  // Enter key
-  if (charCode === 13) {
-    socket.send(currentCommand);
+  socket.onmessage = (event) => {
     term.write("\r\n");
-    currentCommand = "";
-    return;
-  }
+    term.write(event.data);
+    term.write("\r\n$ ");
+  };
 
-  // Backspace
-  if (charCode === 127) {
-    if (currentCommand.length > 0) {
-      currentCommand = currentCommand.slice(0, -1);
-      term.write("\b \b");
-    }
-    return;
-  }
-
-  // Normal typing
-  currentCommand += data;
-  term.write(data);
-}); 
-
-    socket.onerror = () => {
-      term.writeln("\r\nWebSocket Error");
-    };
-
-    socket.onclose = () => {
-      term.writeln("\r\nDisconnected from Server");
-    };
-
-    return () => {
-      socket.close();
-      term.dispose();
-      xtermRef.current = null;
-    };
-  }, []);
+  return () => {
+    socket.close();
+  };
+}, []);
 
   return (
     <div
