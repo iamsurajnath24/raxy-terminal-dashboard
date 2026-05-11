@@ -9,25 +9,45 @@ export default function Terminal() {
   const xtermRef = useRef<XTerm | null>(null);
 
 useEffect(() => {
-  const term = new XTerm();
-  if (terminalRef.current) {
-  term.open(terminalRef.current);
-}
+  console.log("TERMINAL COMPONENT MOUNTED");
 
-  const socket = new WebSocket("wss://raxy-terminal-dashboard.onrender.com");
+  const term = new XTerm();
+
+  if (terminalRef.current) {
+    term.open(terminalRef.current);
+  }
+
+  const socket = new WebSocket(
+    "wss://raxy-terminal-dashboard.onrender.com"
+  );
 
   socket.onopen = () => {
+    console.log("SOCKET OPENED");
+
     term.writeln("Connected to WebSocket Server");
+
     socket.send("ROLE:DASHBOARD");
   };
 
   socket.onmessage = (event) => {
+    console.log("MESSAGE RECEIVED:", event.data);
+
     term.write("\r\n");
-    term.write(event.data);
+    term.write(String(event.data));
     term.write("\r\n$ ");
   };
 
+  socket.onclose = () => {
+    console.log("SOCKET CLOSED");
+  };
+
+  socket.onerror = (err) => {
+    console.log("SOCKET ERROR:", err);
+  };
+
   return () => {
+    console.log("USEEFFECT CLEANUP RUNNING");
+
     socket.close();
   };
 }, []);
