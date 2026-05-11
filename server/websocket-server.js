@@ -1,11 +1,13 @@
 const WebSocket = require("ws");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const PORT = process.env.PORT || 8080;
+
+const wss = new WebSocket.Server({ port: PORT });
 
 let dashboardClient = null;
 let raxyClient = null;
 
-console.log("WebSocket Server Running on ws://localhost:8080");
+console.log(`WebSocket Server Running on port ${PORT}`);
 
 wss.on("connection", (ws) => {
   console.log("New Client Connected");
