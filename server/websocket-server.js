@@ -1,8 +1,14 @@
 const WebSocket = require("ws");
+const http = require("http");
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 10000;
 
-const wss = new WebSocket.Server({ port: PORT });
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end("WebSocket Server Running");
+});
+
+const wss = new WebSocket.Server({ server });
 
 let dashboardClient = null;
 let raxyClient = null;
@@ -13,32 +19,24 @@ wss.on("connection", (ws) => {
   console.log("New Client Connected");
 
   ws.on("message", (message) => {
-    const data = message.toString();
+    const msg = message.toString();
 
-    // Identify Dashboard
-    if (data === "ROLE:DASHBOARD") {
+    console.log("Received:", msg);
+
+    if (msg === "ROLE:DASHBOARD") {
       dashboardClient = ws;
       console.log("Dashboard Connected");
       return;
     }
 
-    // Identify Raxy Client
-    if (data === "ROLE:RAXY") {
+    if (msg === "ROLE:RAXY") {
       raxyClient = ws;
-      console.log("Raxy Client Connected");
+      console.log("Raxy Connected");
       return;
     }
 
-    console.log("Received:", data);
-
-// If message comes from Raxy → send to Dashboard
     if (dashboardClient && ws === raxyClient) {
-    dashboardClient.send(data);
-    }
-
-// If message comes from Dashboard → send to Raxy
-    if (raxyClient && ws === dashboardClient) {
-    raxyClient.send(data);
+      dashboardClient.send(msg);
     }
   });
 
@@ -53,4 +51,8 @@ wss.on("connection", (ws) => {
       raxyClient = null;
     }
   });
+});
+
+server.listen(PORT, () => {
+  console.log(`Server listening on ${PORT}`);
 });

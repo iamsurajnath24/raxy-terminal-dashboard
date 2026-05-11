@@ -3,7 +3,7 @@ import websockets
 import subprocess
 
 async def connect_to_server():
-    uri = "ws://localhost:8080"
+    uri = "wss://raxy-terminal-dashboard.onrender.com"
 
     async with websockets.connect(uri) as websocket:
         print("Connected to WebSocket Server")
