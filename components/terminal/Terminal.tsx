@@ -53,6 +53,37 @@ export default function Terminal() {
 
       term.write("\r\n$ ");
     };
+    let currentCommand = "";
+
+term.onData((data) => {
+
+  if (data === "\r") {
+
+    term.write("\r\n");
+
+    socket.send(currentCommand);
+
+    currentCommand = "";
+
+    return;
+  }
+
+  if (data === "\u007F") {
+
+    if (currentCommand.length > 0) {
+
+      currentCommand = currentCommand.slice(0, -1);
+
+      term.write("\b \b");
+    }
+
+    return;
+  }
+
+  currentCommand += data;
+
+  term.write(data);
+});
 
     socket.onclose = () => {
       console.log("SOCKET CLOSED");
